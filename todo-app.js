@@ -4,15 +4,14 @@ class Task {
     constructor(name, dueDate, isDone) {
         this.taskId = Date.now();
         this.name = name;
-        this.dueDate = dueDate;
+        this.dueDate = new Date(dueDate);
         this.isDone = isDone;
     }
 
     toString() {
         let htmlText = '<li class="task" ><div>'
         htmlText += this.name
-        htmlText += ", " + this.dueDate.getDate() 
-                 + "/" + this.dueDate.getMonth();
+        htmlText += ", " + this.dueDate.getDate() + "/" + (this.dueDate.getMonth() + 1);
         htmlText += '<input type="checkbox" name="isDone" id="isDone">'
         htmlText += '<button onclick="deleteTask(';
         htmlText += this.taskId;
@@ -47,7 +46,8 @@ function deleteTask(taskId) {
 
 function createTask() {
     const taskName = document.getElementById("taskName").value;
-    addTask(new Task(taskName, new Date(), false));
+    const dueDate = document.getElementById("dueDate").value;
+    addTask(new Task(taskName, dueDate, false));
 }
 
 function addTask(t) {
