@@ -33,20 +33,63 @@ def add_task():
     with open('tasks.json', 'a+') as file:
         file.seek(0)
         data = file.read()
-        if len(data) > 0:
-            file.write("\n")
-            json.dump(task, file)
+        print(data)
+        if not data.strip():
+            if len(data) > 0:
+                file.write("\n")
+                json.dump(task, file)
         else:
             json.dump(task, file)
-    return jsonify({"success" : 200})
+    return jsonify({"status" : 200})
 
 @app.route("/api/getTask", methods = ["GET","POST"])
 def show_tasks():
     all_taks = []
     with open('tasks.json', 'r') as file:
-        for jsonObj in file.readlines():
-            all_taks.append(json.loads(jsonObj))
-    return jsonify({"success" : 200, "taskList" : all_taks})  
+        for obj in file.readlines():
+            # print(obj, "obj#####")
+            all_taks.append(json.loads(obj))
+    return jsonify({"status" : 200, "taskList" : all_taks})
+
+
+@app.route("/api/mark", methods = ["POST"])
+def markTask():
+    id = request.form.get('id')
+    print(id, type(id))
+    all_taks = []
+    with open('tasks.json', 'r') as file:
+        for obj in file.readlines():
+            if not obj.strip():
+                continue
+            else: 
+                taskObj = json.loads(obj)
+                if taskObj['taskId'] != int(id):
+                    all_taks.append(obj)
+                else :
+                    taskObj['isDone'] = True
+                    obj = json.dumps(taskObj)
+                    all_taks.append(obj + "\n")
+    with open('tasks.json', 'w') as file:
+        file.writelines(''.join(all_taks))
+    return jsonify({"status" : 200})   
+
+@app.route("/api/delete", methods = ["POST"])
+def deleteTask():
+    id = request.form.get('id')
+    all_taks = []
+    with open('tasks.json', 'r') as file:
+        for obj in file.readlines():
+            if not obj.strip():
+                continue
+            else :
+                taskObj = json.loads(obj)
+                if taskObj['taskId'] != int(id):
+                    all_taks.append(obj)
+    print(all_taks)                
+    with open('tasks.json', 'w') as file:
+        file.writelines(''.join(all_taks))
+    return jsonify({"status" : 200})
+
 
 
 

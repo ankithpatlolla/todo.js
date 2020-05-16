@@ -1,18 +1,19 @@
 let taskList = []
 
 class Task {
-    constructor(name, dueDate, isDone) {
-        this.taskId = Date.now();
+
+    constructor(taskId, name, dueDate, isDone) {
+        this.taskId = taskId;
         this.name = name;
-        this.dueDate = new Date(dueDate);
+        this.dueDate = dueDate;
         this.isDone = isDone;
     }
 
     toString() {
         let htmlText = '<li class="task" ><div>'
-        htmlText += this.name
-        htmlText += ", " + this.dueDate.getDate() + "/" + (this.dueDate.getMonth() + 1);
-        htmlText += '<input type="checkbox" name="isDone" id="isDone">'
+        htmlText += this.name;
+        htmlText += ", " + this.dueDate;
+        htmlText += '<input type="checkbox" name="isDone" id="isDone" onclick="marked('+this.taskId+')">'
         htmlText += '<button onclick="deleteTask(';
         htmlText += this.taskId;
         htmlText += ')">Delete</button>';
@@ -24,11 +25,13 @@ class Task {
 function render() {
     const listUI = document.getElementById("todolist")
     listUI.innerHTML = "";
-    if (taskList.length === 0) listUI.innerHTML = "No tasks :-)"
+    if (taskList.length === 0) listUI.innerHTML = "No tasks todo :-)"
     taskList.forEach((task) => {
-        listUI.innerHTML += task.toString();
+        console.log(task)
         if (task.isDone === true) {
-            document.getElementById(task.name).innerHTML = '<s>'+task.name+'</s>'
+            listUI.innerHTML += "<b>" + task.toString() + "</b>";
+        } else {
+            listUI.innerHTML += task.toString();
         }
     })
 }
@@ -40,11 +43,18 @@ function deleteTask(taskId) {
             return t;
         }
     );
+    render();
     // call a web api to update the database on the server
-    
+    const myReq = new XMLHttpRequest();
+    myReq.open('POST', '/api/delete');
+    myReq.onload = () => { 
+    const data = JSON.parse(myReq.responseText);
+    }
+    const data = new FormData();
+    data.append('id', taskId);
+    myReq.send(data);
+    return false;
     // update the DOM
-    render()
-    console.log(taskList);
 }
 
 function createTask() {
@@ -54,20 +64,17 @@ function createTask() {
         alert("Task name and Due date are mandatory")
         return false;   
     }
-    addTask(new Task(taskName, dueDate, false));
+    addTask(new Task(Date.now(), taskName, dueDate, false));
 }
 
 function addTask(t) {
-    // taskList.push(t)
-    //call a web api to update the database on the server
-    // render();
-    // console.log(taskList);
+    taskList.push(t)
     render();
-    taskObj = {'taskID':t.taskID,
+    taskObj = {'taskId':t.taskId,
             'name':t.name,
             'dueDate':t.dueDate,
             'isDone':t.isDone}
-    const myReq = new XMLHttpmyReq();
+    const myReq = new XMLHttpRequest();
     myReq.open('POST', '/api/add');
     myReq.onload = () => {
         const data = JSON.parse(myReq.responseText);
@@ -76,6 +83,25 @@ function addTask(t) {
     myReq.send(data);
     return false;     
 }
+
+function marked(taskId) {
+    taskList.forEach((task) => {
+        if (task.taskId === taskId) {
+            task.isDone = true;
+        }
+    })
+    console.log(taskList);
+    const myReq = new XMLHttpRequest();
+    myReq.open('POST', '/api/mark');
+    myReq.onload = () => { 
+    const data = JSON.parse(myReq.responseText);
+    }
+    const data = new FormData();
+    data.append('id', taskId);
+    myReq.send(data);
+    return false;
+}
+
 
 function init() {
     console.log("init called");
@@ -89,17 +115,14 @@ function init() {
     myReq.open('POST', '/api/getTask');
     myReq.onload = () => { 
     const data = JSON.parse(myReq.responseText);
-    count = 0;
     for (let i = 0; i < data.taskList.length; i++) {
-        taskList.push(new Task(data.taskList[i].taskId, data.taskList[i].name, data.taskList[i].date, data.taskList[i].isDone))
-        count++;
+        taskList.push(new Task(data.taskList[i].taskId, data.taskList[i].name, data.taskList[i].dueDate, data.taskList[i].isDone))
     }
-    }
-    const data = new FormData();
-    data.append('id', '');
-    myReq.send(data);
     render();
-    return false;
+    console.log(taskList);
+    }
+    myReq.send()
+    return false
 }
 
 init();
