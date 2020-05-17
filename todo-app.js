@@ -1,8 +1,8 @@
 function Task(props) {
     if (props.isDone === true) {
-        return <li> <b>{props.name} {props.dueDate} {props.isDone} {props.mark} {props.delete} </b></li>
+        return <li> <b>{props.name} {props.dueDate} {props.mark} {props.delete} </b></li>
     } else {
-        return <li> {props.name} {props.dueDate} {props.isDone} {props.mark} {props.delete} </li>
+        return <li> {props.name} {props.dueDate} {props.mark} {props.delete} </li>
     }
 }
 
